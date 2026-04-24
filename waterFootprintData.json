@@ -1,0 +1,243 @@
+{
+  "products": {
+    "wheat": {
+      "label": "Wheat",
+      "icon": "🌾",
+      "category": "Grains",
+      "baseFootprint": 1827,
+      "green": 1654,
+      "blue": 152,
+      "grey": 21,
+      "unit": "L/kg",
+      "description": "Global average water footprint for wheat production"
+    },
+    "rice": {
+      "label": "Rice",
+      "icon": "🍚",
+      "category": "Grains",
+      "baseFootprint": 2497,
+      "green": 1022,
+      "blue": 1236,
+      "grey": 239,
+      "unit": "L/kg",
+      "description": "Paddy rice — highly water-intensive due to flooded fields"
+    },
+    "maize": {
+      "label": "Maize (Corn)",
+      "icon": "🌽",
+      "category": "Grains",
+      "baseFootprint": 1222,
+      "green": 1103,
+      "blue": 86,
+      "grey": 33,
+      "unit": "L/kg",
+      "description": "Corn is moderately water-intensive"
+    },
+    "sugarcane": {
+      "label": "Sugarcane",
+      "icon": "🎋",
+      "category": "Cash Crops",
+      "baseFootprint": 210,
+      "green": 155,
+      "blue": 35,
+      "grey": 20,
+      "unit": "L/kg",
+      "description": "Relatively low per kg but grown in huge volumes"
+    },
+    "cotton": {
+      "label": "Cotton",
+      "icon": "☁️",
+      "category": "Cash Crops",
+      "baseFootprint": 10000,
+      "green": 6003,
+      "blue": 2535,
+      "grey": 1514,
+      "unit": "L/kg",
+      "description": "One of the most water-intensive crops globally"
+    },
+    "soybean": {
+      "label": "Soybean",
+      "icon": "🫘",
+      "category": "Legumes",
+      "baseFootprint": 2145,
+      "green": 2097,
+      "blue": 8,
+      "grey": 40,
+      "unit": "L/kg",
+      "description": "Mostly rain-fed; heavily grown in South America"
+    },
+    "potato": {
+      "label": "Potato",
+      "icon": "🥔",
+      "category": "Vegetables",
+      "baseFootprint": 287,
+      "green": 197,
+      "blue": 64,
+      "grey": 26,
+      "unit": "L/kg",
+      "description": "One of the most water-efficient staple crops"
+    },
+    "tomato": {
+      "label": "Tomato",
+      "icon": "🍅",
+      "category": "Vegetables",
+      "baseFootprint": 214,
+      "green": 93,
+      "blue": 89,
+      "grey": 32,
+      "unit": "L/kg",
+      "description": "Moderate water use — common in drip-irrigated systems"
+    },
+    "onion": {
+      "label": "Onion",
+      "icon": "🧅",
+      "category": "Vegetables",
+      "baseFootprint": 272,
+      "green": 173,
+      "blue": 78,
+      "grey": 21,
+      "unit": "L/kg",
+      "description": "Moderately water-intensive vegetable"
+    },
+    "apple": {
+      "label": "Apple",
+      "icon": "🍎",
+      "category": "Fruits",
+      "baseFootprint": 822,
+      "green": 693,
+      "blue": 96,
+      "grey": 33,
+      "unit": "L/kg",
+      "description": "Fruit orchards require consistent water year-round"
+    },
+    "banana": {
+      "label": "Banana",
+      "icon": "🍌",
+      "category": "Fruits",
+      "baseFootprint": 790,
+      "green": 577,
+      "blue": 103,
+      "grey": 110,
+      "unit": "L/kg",
+      "description": "Tropical fruit grown in high-rainfall regions"
+    },
+    "mango": {
+      "label": "Mango",
+      "icon": "🥭",
+      "category": "Fruits",
+      "baseFootprint": 1600,
+      "green": 1200,
+      "blue": 280,
+      "grey": 120,
+      "unit": "L/kg",
+      "description": "Popular tropical drupe — water-intensive in dry climates"
+    },
+    "groundnut": {
+      "label": "Groundnut (Peanut)",
+      "icon": "🥜",
+      "category": "Legumes",
+      "baseFootprint": 2782,
+      "green": 2637,
+      "blue": 87,
+      "grey": 58,
+      "unit": "L/kg",
+      "description": "Largely rain-fed legume, significant grey water"
+    },
+    "sunflower": {
+      "label": "Sunflower",
+      "icon": "🌻",
+      "category": "Cash Crops",
+      "baseFootprint": 3366,
+      "green": 3167,
+      "blue": 130,
+      "grey": 69,
+      "unit": "L/kg",
+      "description": "Oil-seed crop with high water demand"
+    },
+    "coffee": {
+      "label": "Coffee",
+      "icon": "☕",
+      "category": "Cash Crops",
+      "baseFootprint": 18900,
+      "green": 15263,
+      "blue": 2201,
+      "grey": 1437,
+      "unit": "L/kg",
+      "description": "Extremely water-intensive — includes processing"
+    },
+    "tea": {
+      "label": "Tea",
+      "icon": "🍵",
+      "category": "Cash Crops",
+      "baseFootprint": 9200,
+      "green": 8277,
+      "blue": 553,
+      "grey": 370,
+      "unit": "L/kg",
+      "description": "High rainfall regions reduce blue water but totals remain high"
+    },
+    "sugarbeet": {
+      "label": "Sugar Beet",
+      "icon": "🌱",
+      "category": "Cash Crops",
+      "baseFootprint": 132,
+      "green": 73,
+      "blue": 44,
+      "grey": 15,
+      "unit": "L/kg",
+      "description": "Much more water-efficient than sugarcane"
+    },
+    "cassava": {
+      "label": "Cassava",
+      "icon": "🍠",
+      "category": "Root Crops",
+      "baseFootprint": 558,
+      "green": 514,
+      "blue": 6,
+      "grey": 38,
+      "unit": "L/kg",
+      "description": "Drought-tolerant root crop, mostly rain-fed"
+    }
+  },
+  "climateMultipliers": {
+    "tropical": { "label": "Tropical", "multiplier": 0.85, "description": "High rainfall reduces blue water dependency" },
+    "arid": { "label": "Arid / Desert", "multiplier": 1.55, "description": "Low rainfall increases irrigation demand significantly" },
+    "semi_arid": { "label": "Semi-Arid", "multiplier": 1.25, "description": "Moderate water stress — supplemental irrigation common" },
+    "temperate": { "label": "Temperate", "multiplier": 1.0, "description": "Baseline — moderate rainfall and evapotranspiration" },
+    "continental": { "label": "Continental", "multiplier": 1.10, "description": "Cold winters, warm summers — seasonal water stress" },
+    "mediterranean": { "label": "Mediterranean", "multiplier": 1.20, "description": "Dry summers drive heavy irrigation for summer crops" },
+    "humid_subtropical": { "label": "Humid Subtropical", "multiplier": 0.90, "description": "High humidity reduces crop water stress" }
+  },
+  "irrigationMultipliers": {
+    "drip": { "label": "Drip Irrigation", "multiplier": 0.75, "efficiency": 90, "description": "Highest efficiency — water delivered directly to roots" },
+    "sprinkler": { "label": "Sprinkler", "multiplier": 0.90, "efficiency": 75, "description": "Good efficiency — evaporation losses moderate" },
+    "surface": { "label": "Surface / Flood", "multiplier": 1.30, "efficiency": 45, "description": "Traditional method — high evaporation and runoff losses" },
+    "furrow": { "label": "Furrow Irrigation", "multiplier": 1.15, "efficiency": 55, "description": "Channels water between crop rows — moderate losses" },
+    "rainfed": { "label": "Rain-fed (No Irrigation)", "multiplier": 1.0, "efficiency": 100, "description": "Depends entirely on natural rainfall — no blue water added" },
+    "subsurface_drip": { "label": "Subsurface Drip", "multiplier": 0.65, "efficiency": 95, "description": "Most efficient — minimal evaporation, no surface wetting" }
+  },
+  "soilMultipliers": {
+    "loamy": { "label": "Loamy", "multiplier": 1.0, "description": "Ideal soil — good water retention and drainage" },
+    "sandy": { "label": "Sandy", "multiplier": 1.25, "description": "Poor water retention — more irrigation needed" },
+    "clay": { "label": "Clay", "multiplier": 0.90, "description": "High retention but poor drainage — waterlogging risk" },
+    "silt": { "label": "Silty", "multiplier": 0.95, "description": "Good moisture retention — slightly better than loam" },
+    "peaty": { "label": "Peaty", "multiplier": 0.85, "description": "Excellent moisture retention — common in wetland farms" },
+    "chalky": { "label": "Chalky / Alkaline", "multiplier": 1.15, "description": "Fast drainage — increases irrigation requirement" }
+  },
+  "seasonMultipliers": {
+    "kharif": { "label": "Kharif (Monsoon)", "multiplier": 0.80, "description": "Monsoon season — high natural rainfall" },
+    "rabi": { "label": "Rabi (Winter)", "multiplier": 1.10, "description": "Cool and dry — moderate irrigation needed" },
+    "zaid": { "label": "Zaid (Summer)", "multiplier": 1.35, "description": "Hot dry season — highest irrigation demand" },
+    "spring": { "label": "Spring", "multiplier": 0.95, "description": "Mild temperatures, moderate rainfall" },
+    "summer": { "label": "Summer", "multiplier": 1.30, "description": "Peak evapotranspiration — high water demand" },
+    "autumn": { "label": "Autumn / Fall", "multiplier": 0.90, "description": "Cooling temps, reduced evapotranspiration" },
+    "winter": { "label": "Winter", "multiplier": 1.05, "description": "Cold temperatures — some crops need frost protection" },
+    "year_round": { "label": "Year-Round", "multiplier": 1.0, "description": "Average of all seasonal conditions" }
+  },
+  "references": [
+    "Mekonnen & Hoekstra (2011) — The green, blue and grey water footprint of crops and derived crop products",
+    "Water Footprint Network — Product Gallery",
+    "FAO AQUASTAT — Global Information System on Water and Agriculture",
+    "Hoekstra et al. (2011) — The Water Footprint Assessment Manual"
+  ]
+}

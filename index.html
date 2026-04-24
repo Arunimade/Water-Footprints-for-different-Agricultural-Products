@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AquaTrace — Agricultural Water Footprint Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Decorative background blobs -->
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-drop">💧</span>
+        <div>
+          <span class="logo-name">AquaTrace</span>
+          <span class="logo-tagline">Agricultural Water Footprint</span>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn active" data-tab="calculator">Calculator</button>
+        <button class="nav-btn" data-tab="compare">Compare</button>
+        <button class="nav-btn" data-tab="glossary">Glossary</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- ===== TAB: CALCULATOR ===== -->
+    <section class="tab-panel active" id="tab-calculator">
+      <div class="page-hero">
+        <h1 class="hero-title">How much water grows <em>your</em> food?</h1>
+        <p class="hero-sub">Select a crop and growing conditions to calculate the virtual water embedded in agricultural production — based on peer-reviewed global data.</p>
+      </div>
+
+      <div class="calculator-layout">
+
+        <!-- FORM CARD -->
+        <div class="card form-card">
+          <div class="card-header">
+            <span class="card-icon">🌿</span>
+            <h2>Crop & Conditions</h2>
+          </div>
+
+          <form id="calculatorForm" novalidate>
+
+            <!-- Product -->
+            <div class="field-group">
+              <label class="field-label" for="product">Crop / Product</label>
+              <div class="select-wrapper">
+                <select id="product" name="product" required>
+                  <option value="">— Select a crop —</option>
+                </select>
+              </div>
+              <div class="product-meta" id="productMeta"></div>
+            </div>
+
+            <!-- Yield -->
+            <div class="field-group">
+              <label class="field-label" for="yieldKg">
+                Quantity / Yield
+                <span class="field-hint">in kilograms</span>
+              </label>
+              <div class="input-row">
+                <input type="number" id="yieldKg" name="yieldKg" min="0.1" max="100000" step="0.1" placeholder="e.g. 1000" required />
+                <span class="unit-badge">kg</span>
+              </div>
+              <div class="quick-yields">
+                <span class="quick-label">Quick set:</span>
+                <button type="button" class="quick-btn" data-val="1">1 kg</button>
+                <button type="button" class="quick-btn" data-val="100">100 kg</button>
+                <button type="button" class="quick-btn" data-val="1000">1 tonne</button>
+                <button type="button" class="quick-btn" data-val="10000">10 tonnes</button>
+              </div>
+            </div>
+
+            <!-- 2-column grid for dropdowns -->
+            <div class="field-grid">
+
+              <div class="field-group">
+                <label class="field-label" for="climate">Climate Type</label>
+                <div class="select-wrapper">
+                  <select id="climate" name="climate" required>
+                    <option value="">— Select —</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="irrigation">Irrigation Method</label>
+                <div class="select-wrapper">
+                  <select id="irrigation" name="irrigation" required>
+                    <option value="">— Select —</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="soil">Soil Type</label>
+                <div class="select-wrapper">
+                  <select id="soil" name="soil" required>
+                    <option value="">— Select —</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label class="field-label" for="season">Growing Season</label>
+                <div class="select-wrapper">
+                  <select id="season" name="season" required>
+                    <option value="">— Select —</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Error -->
+            <div class="form-error" id="formError" hidden></div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn-calculate" id="calcBtn">
+              <span class="btn-icon">💧</span>
+              Calculate Water Footprint
+            </button>
+
+          </form>
+        </div>
+
+        <!-- RESULTS PANEL -->
+        <div class="results-panel" id="resultsPanel">
+          <div class="results-empty" id="resultsEmpty">
+            <div class="empty-illustration">
+              <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="60" cy="60" r="55" fill="#e0f2fe" opacity="0.5"/>
+                <path d="M60 25 C60 25 35 55 35 72 C35 86.4 46.2 98 60 98 C73.8 98 85 86.4 85 72 C85 55 60 25 60 25Z" fill="#bae6fd" opacity="0.7"/>
+                <path d="M60 45 C60 45 45 62 45 72 C45 80.3 51.7 87 60 87 C68.3 87 75 80.3 75 72 C75 62 60 45 60 45Z" fill="#7dd3fc" opacity="0.5"/>
+              </svg>
+            </div>
+            <p>Fill in the form to reveal the water footprint of your selected crop.</p>
+          </div>
+
+          <div class="results-content" id="resultsContent" hidden>
+
+            <!-- Main Result -->
+            <div class="card result-hero-card">
+              <div class="result-crop-header">
+                <span class="result-crop-icon" id="rCropIcon"></span>
+                <div>
+                  <div class="result-crop-name" id="rCropName"></div>
+                  <div class="result-crop-sub" id="rCropSub"></div>
+                </div>
+              </div>
+              <div class="result-big-number">
+                <span id="rTotalLitres" class="big-num"></span>
+                <span class="big-unit">litres</span>
+              </div>
+              <div class="result-big-sub">Total Virtual Water for <span id="rYieldDisplay"></span></div>
+              <div class="result-per-kg">
+                <span id="rPerKg"></span> <span class="per-kg-label">L / kg (adjusted)</span>
+              </div>
+            </div>
+
+            <!-- Water Type Breakdown -->
+            <div class="card breakdown-card">
+              <h3 class="card-section-title">Water Type Breakdown</h3>
+              <div class="water-bars" id="waterBars"></div>
+              <div class="water-legend">
+                <span class="legend-dot green"></span> Green — Rainwater
+                <span class="legend-dot blue"></span> Blue — Irrigation
+                <span class="legend-dot grey"></span> Grey — Pollution dilution
+              </div>
+            </div>
+
+            <!-- Conditions Summary -->
+            <div class="card conditions-card">
+              <h3 class="card-section-title">Applied Conditions</h3>
+              <div class="conditions-grid" id="conditionsGrid"></div>
+            </div>
+
+            <!-- Comparisons -->
+            <div class="card comparisons-card">
+              <h3 class="card-section-title">What does this equal?</h3>
+              <div class="comparisons-grid" id="comparisonsGrid"></div>
+            </div>
+
+            <!-- Source Note -->
+            <div class="source-note">
+              <strong>Data Sources:</strong> Mekonnen &amp; Hoekstra (2011), Water Footprint Network, FAO AQUASTAT. Values represent global averages and are adjusted using peer-reviewed multipliers for local conditions.
+            </div>
+
+            <!-- Actions -->
+            <div class="result-actions">
+              <button class="btn-secondary" id="btnReset">↺ Reset</button>
+              <button class="btn-secondary" id="btnAddCompare">+ Add to Compare</button>
+              <button class="btn-primary" id="btnCopyResult">📋 Copy Result</button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== TAB: COMPARE ===== -->
+    <section class="tab-panel" id="tab-compare">
+      <div class="page-hero">
+        <h1 class="hero-title">Compare Water Footprints</h1>
+        <p class="hero-sub">Add up to 5 crops from the Calculator to compare side-by-side.</p>
+      </div>
+      <div class="card compare-card">
+        <div id="compareEmpty" class="compare-empty">
+          <p>No crops added yet. Calculate a crop's footprint and click <strong>+ Add to Compare</strong>.</p>
+        </div>
+        <div id="compareTable" hidden></div>
+        <div class="compare-actions" id="compareActions" hidden>
+          <button class="btn-secondary" id="btnClearCompare">✕ Clear All</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TAB: GLOSSARY ===== -->
+    <section class="tab-panel" id="tab-glossary">
+      <div class="page-hero">
+        <h1 class="hero-title">Water Footprint Glossary</h1>
+        <p class="hero-sub">Understanding the science behind virtual water in agriculture.</p>
+      </div>
+      <div class="glossary-grid" id="glossaryGrid"></div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span class="footer-brand">💧 AquaTrace</span>
+      <span class="footer-copy">Data: Mekonnen &amp; Hoekstra (2011) · Water Footprint Network · FAO AQUASTAT</span>
+      <span class="footer-copy">For research &amp; education purposes</span>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>

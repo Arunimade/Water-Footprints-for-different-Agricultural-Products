@@ -1,0 +1,581 @@
+/**
+ * AquaTrace — Agricultural Water Footprint Calculator
+ * All calculations based on peer-reviewed data (Mekonnen & Hoekstra 2011,
+ * Water Footprint Network, FAO AQUASTAT). No external API required.
+ */
+
+/* ============================================================
+   DATA — embedded directly for offline/standalone use
+   (mirrors waterFootprintData.json exactly)
+   ============================================================ */
+const WF_DATA = {
+  products: {
+    wheat:      { label:"Wheat",           icon:"🌾", category:"Grains",      baseFootprint:1827,  green:1654, blue:152,  grey:21,  unit:"L/kg", description:"Global average water footprint for wheat production" },
+    rice:       { label:"Rice",            icon:"🍚", category:"Grains",      baseFootprint:2497,  green:1022, blue:1236, grey:239, unit:"L/kg", description:"Paddy rice — highly water-intensive due to flooded fields" },
+    maize:      { label:"Maize (Corn)",    icon:"🌽", category:"Grains",      baseFootprint:1222,  green:1103, blue:86,   grey:33,  unit:"L/kg", description:"Corn is moderately water-intensive" },
+    sugarcane:  { label:"Sugarcane",       icon:"🎋", category:"Cash Crops",  baseFootprint:210,   green:155,  blue:35,   grey:20,  unit:"L/kg", description:"Relatively low per kg but grown in huge volumes" },
+    cotton:     { label:"Cotton",          icon:"☁️", category:"Cash Crops",  baseFootprint:10000, green:6003, blue:2535, grey:1514,unit:"L/kg", description:"One of the most water-intensive crops globally" },
+    soybean:    { label:"Soybean",         icon:"🫘", category:"Legumes",     baseFootprint:2145,  green:2097, blue:8,    grey:40,  unit:"L/kg", description:"Mostly rain-fed; heavily grown in South America" },
+    potato:     { label:"Potato",          icon:"🥔", category:"Vegetables",  baseFootprint:287,   green:197,  blue:64,   grey:26,  unit:"L/kg", description:"One of the most water-efficient staple crops" },
+    tomato:     { label:"Tomato",          icon:"🍅", category:"Vegetables",  baseFootprint:214,   green:93,   blue:89,   grey:32,  unit:"L/kg", description:"Moderate water use — common in drip-irrigated systems" },
+    onion:      { label:"Onion",           icon:"🧅", category:"Vegetables",  baseFootprint:272,   green:173,  blue:78,   grey:21,  unit:"L/kg", description:"Moderately water-intensive vegetable" },
+    apple:      { label:"Apple",           icon:"🍎", category:"Fruits",      baseFootprint:822,   green:693,  blue:96,   grey:33,  unit:"L/kg", description:"Fruit orchards require consistent water year-round" },
+    banana:     { label:"Banana",          icon:"🍌", category:"Fruits",      baseFootprint:790,   green:577,  blue:103,  grey:110, unit:"L/kg", description:"Tropical fruit grown in high-rainfall regions" },
+    mango:      { label:"Mango",           icon:"🥭", category:"Fruits",      baseFootprint:1600,  green:1200, blue:280,  grey:120, unit:"L/kg", description:"Popular tropical drupe — water-intensive in dry climates" },
+    groundnut:  { label:"Groundnut (Peanut)", icon:"🥜", category:"Legumes", baseFootprint:2782,  green:2637, blue:87,   grey:58,  unit:"L/kg", description:"Largely rain-fed legume, significant grey water" },
+    sunflower:  { label:"Sunflower",       icon:"🌻", category:"Cash Crops",  baseFootprint:3366,  green:3167, blue:130,  grey:69,  unit:"L/kg", description:"Oil-seed crop with high water demand" },
+    coffee:     { label:"Coffee",          icon:"☕", category:"Cash Crops",  baseFootprint:18900, green:15263,blue:2201, grey:1437,unit:"L/kg", description:"Extremely water-intensive — includes processing" },
+    tea:        { label:"Tea",             icon:"🍵", category:"Cash Crops",  baseFootprint:9200,  green:8277, blue:553,  grey:370, unit:"L/kg", description:"High rainfall regions reduce blue water but totals remain high" },
+    sugarbeet:  { label:"Sugar Beet",      icon:"🌱", category:"Cash Crops",  baseFootprint:132,   green:73,   blue:44,   grey:15,  unit:"L/kg", description:"Much more water-efficient than sugarcane" },
+    cassava:    { label:"Cassava",         icon:"🍠", category:"Root Crops",  baseFootprint:558,   green:514,  blue:6,    grey:38,  unit:"L/kg", description:"Drought-tolerant root crop, mostly rain-fed" }
+  },
+  climateMultipliers: {
+    tropical:         { label:"Tropical",             multiplier:0.85, description:"High rainfall reduces blue water dependency" },
+    arid:             { label:"Arid / Desert",         multiplier:1.55, description:"Low rainfall increases irrigation demand significantly" },
+    semi_arid:        { label:"Semi-Arid",             multiplier:1.25, description:"Moderate water stress — supplemental irrigation common" },
+    temperate:        { label:"Temperate",             multiplier:1.00, description:"Baseline — moderate rainfall and evapotranspiration" },
+    continental:      { label:"Continental",           multiplier:1.10, description:"Cold winters, warm summers — seasonal water stress" },
+    mediterranean:    { label:"Mediterranean",         multiplier:1.20, description:"Dry summers drive heavy irrigation for summer crops" },
+    humid_subtropical:{ label:"Humid Subtropical",     multiplier:0.90, description:"High humidity reduces crop water stress" }
+  },
+  irrigationMultipliers: {
+    drip:             { label:"Drip Irrigation",       multiplier:0.75, efficiency:90,  description:"Highest efficiency — water delivered directly to roots" },
+    sprinkler:        { label:"Sprinkler",             multiplier:0.90, efficiency:75,  description:"Good efficiency — evaporation losses moderate" },
+    surface:          { label:"Surface / Flood",       multiplier:1.30, efficiency:45,  description:"Traditional method — high evaporation and runoff losses" },
+    furrow:           { label:"Furrow Irrigation",     multiplier:1.15, efficiency:55,  description:"Channels water between crop rows — moderate losses" },
+    rainfed:          { label:"Rain-fed (No Irrigation)",multiplier:1.00,efficiency:100, description:"Depends entirely on natural rainfall — no blue water added" },
+    subsurface_drip:  { label:"Subsurface Drip",       multiplier:0.65, efficiency:95,  description:"Most efficient — minimal evaporation, no surface wetting" }
+  },
+  soilMultipliers: {
+    loamy:   { label:"Loamy",            multiplier:1.00, description:"Ideal soil — good water retention and drainage" },
+    sandy:   { label:"Sandy",            multiplier:1.25, description:"Poor water retention — more irrigation needed" },
+    clay:    { label:"Clay",             multiplier:0.90, description:"High retention but poor drainage — waterlogging risk" },
+    silt:    { label:"Silty",            multiplier:0.95, description:"Good moisture retention — slightly better than loam" },
+    peaty:   { label:"Peaty",            multiplier:0.85, description:"Excellent moisture retention — common in wetland farms" },
+    chalky:  { label:"Chalky / Alkaline",multiplier:1.15, description:"Fast drainage — increases irrigation requirement" }
+  },
+  seasonMultipliers: {
+    kharif:     { label:"Kharif (Monsoon)",   multiplier:0.80, description:"Monsoon season — high natural rainfall" },
+    rabi:       { label:"Rabi (Winter)",       multiplier:1.10, description:"Cool and dry — moderate irrigation needed" },
+    zaid:       { label:"Zaid (Summer)",       multiplier:1.35, description:"Hot dry season — highest irrigation demand" },
+    spring:     { label:"Spring",             multiplier:0.95, description:"Mild temperatures, moderate rainfall" },
+    summer:     { label:"Summer",             multiplier:1.30, description:"Peak evapotranspiration — high water demand" },
+    autumn:     { label:"Autumn / Fall",       multiplier:0.90, description:"Cooling temps, reduced evapotranspiration" },
+    winter:     { label:"Winter",             multiplier:1.05, description:"Cold temperatures — some crops need frost protection" },
+    year_round: { label:"Year-Round",         multiplier:1.00, description:"Average of all seasonal conditions" }
+  }
+};
+
+/* ============================================================
+   GLOSSARY CONTENT
+   ============================================================ */
+const GLOSSARY = [
+  {
+    tag:"concept", tagLabel:"Core Concept",
+    title:"Water Footprint",
+    body:"The total volume of freshwater consumed or polluted to produce a good or service, measured in litres or cubic metres per kilogram of product. It includes water used at all stages of production."
+  },
+  {
+    tag:"green", tagLabel:"Green Water",
+    title:"Green Water Footprint",
+    body:"The volume of rainwater consumed during the production process — evaporated, transpired by plants, or incorporated into the product. Green water is rain stored in the soil and used by crops directly."
+  },
+  {
+    tag:"blue", tagLabel:"Blue Water",
+    title:"Blue Water Footprint",
+    body:"The volume of surface water or groundwater consumed (evaporated or incorporated into the product) during production. Blue water is the freshwater drawn from rivers, lakes, or aquifers for irrigation."
+  },
+  {
+    tag:"grey", tagLabel:"Grey Water",
+    title:"Grey Water Footprint",
+    body:"The volume of freshwater required to assimilate pollutants — such as fertilisers and pesticides — to meet ambient water quality standards. It represents the pollution load on water bodies, not water physically consumed."
+  },
+  {
+    tag:"concept", tagLabel:"Core Concept",
+    title:"Virtual Water",
+    body:"The amount of water 'embedded' in a product — the water needed to produce it. Trading food is equivalent to trading virtual water. Countries import virtual water when they import food, and export it when they export food."
+  },
+  {
+    tag:"concept", tagLabel:"Core Concept",
+    title:"Water Scarcity",
+    body:"Water scarcity occurs when the demand for water exceeds available supply in a region. Agriculture accounts for about 70% of global freshwater withdrawals, making it the largest driver of water scarcity worldwide."
+  },
+  {
+    tag:"blue", tagLabel:"Irrigation",
+    title:"Irrigation Efficiency",
+    body:"The ratio of water that actually benefits the crop to the total water applied. Drip irrigation achieves ~90% efficiency, sprinkler ~75%, and surface flooding ~45%. Higher efficiency means less blue water per kilogram of crop."
+  },
+  {
+    tag:"concept", tagLabel:"Core Concept",
+    title:"Evapotranspiration (ET)",
+    body:"The combined process of evaporation from the soil surface and transpiration from plant leaves. ET is the primary driver of crop water demand — hotter, drier, and windier conditions increase ET and thus water footprint."
+  },
+  {
+    tag:"green", tagLabel:"Climate",
+    title:"Climate & Water Demand",
+    body:"Climate type is one of the most important factors affecting a crop's water footprint. Arid climates can increase water requirements by 50% or more compared to temperate regions, because rainfall doesn't compensate for evapotranspiration."
+  },
+  {
+    tag:"concept", tagLabel:"Measurement",
+    title:"Litre per Kilogram (L/kg)",
+    body:"The standard unit for expressing crop water footprints. It tells you how many litres of water were consumed (and polluted) to produce one kilogram of that agricultural product at the farm gate."
+  },
+  {
+    tag:"grey", tagLabel:"Soil Science",
+    title:"Soil & Water Retention",
+    body:"Soil type dramatically affects how much irrigation is needed. Sandy soils drain fast and hold little water, increasing irrigation frequency. Clay soils retain water well but risk waterlogging. Loamy soils are ideal — balancing drainage and retention."
+  },
+  {
+    tag:"concept", tagLabel:"Food System",
+    title:"Crop Water Productivity",
+    body:"The inverse of water footprint — how many kilograms of food a crop produces per litre of water. Potatoes and sugar beets have very high water productivity; coffee and cotton have very low productivity, consuming thousands of litres per kilogram."
+  }
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let compareList = [];
+let lastResult = null;
+
+/* ============================================================
+   DOM REFS
+   ============================================================ */
+const $ = id => document.getElementById(id);
+
+/* ============================================================
+   INIT
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+  populateSelects();
+  buildGlossary();
+  attachEventListeners();
+});
+
+/* ============================================================
+   POPULATE SELECTS
+   ============================================================ */
+function populateSelects() {
+  // Products — grouped by category
+  const productSel = $('product');
+  const categories = {};
+  for (const [key, p] of Object.entries(WF_DATA.products)) {
+    if (!categories[p.category]) categories[p.category] = [];
+    categories[p.category].push({ key, ...p });
+  }
+  for (const [cat, items] of Object.entries(categories)) {
+    const grp = document.createElement('optgroup');
+    grp.label = cat;
+    items.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.key;
+      opt.textContent = `${p.icon} ${p.label}`;
+      grp.appendChild(opt);
+    });
+    productSel.appendChild(grp);
+  }
+
+  // Climate
+  populateSelect('climate', WF_DATA.climateMultipliers);
+  // Irrigation
+  populateSelect('irrigation', WF_DATA.irrigationMultipliers);
+  // Soil
+  populateSelect('soil', WF_DATA.soilMultipliers);
+  // Season
+  populateSelect('season', WF_DATA.seasonMultipliers);
+}
+
+function populateSelect(id, dataObj) {
+  const sel = $(id);
+  for (const [key, obj] of Object.entries(dataObj)) {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = obj.label;
+    sel.appendChild(opt);
+  }
+}
+
+/* ============================================================
+   BUILD GLOSSARY
+   ============================================================ */
+function buildGlossary() {
+  const grid = $('glossaryGrid');
+  GLOSSARY.forEach(entry => {
+    const card = document.createElement('div');
+    card.className = 'glossary-card';
+    card.innerHTML = `
+      <span class="glossary-tag ${entry.tag}">${entry.tagLabel}</span>
+      <h3>${entry.title}</h3>
+      <p>${entry.body}</p>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* ============================================================
+   EVENT LISTENERS
+   ============================================================ */
+function attachEventListeners() {
+  // Tab navigation
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      $(`tab-${btn.dataset.tab}`).classList.add('active');
+    });
+  });
+
+  // Product meta description
+  $('product').addEventListener('change', (e) => {
+    const p = WF_DATA.products[e.target.value];
+    $('productMeta').textContent = p
+      ? `${p.description} — Base: ${p.baseFootprint.toLocaleString()} L/kg`
+      : '';
+  });
+
+  // Quick yield buttons
+  document.querySelectorAll('.quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('yieldKg').value = btn.dataset.val;
+    });
+  });
+
+  // Form submit
+  $('calculatorForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    calculateAndRender();
+  });
+
+  // Reset
+  $('btnReset').addEventListener('click', () => {
+    $('calculatorForm').reset();
+    $('productMeta').textContent = '';
+    $('resultsEmpty').hidden = false;
+    $('resultsContent').hidden = true;
+    lastResult = null;
+  });
+
+  // Add to compare
+  $('btnAddCompare').addEventListener('click', addToCompare);
+
+  // Copy result
+  $('btnCopyResult').addEventListener('click', copyResult);
+
+  // Clear compare
+  $('btnClearCompare').addEventListener('click', () => {
+    compareList = [];
+    renderCompare();
+  });
+}
+
+/* ============================================================
+   CALCULATION ENGINE
+   ============================================================ */
+function calculateAndRender() {
+  const productKey   = $('product').value;
+  const yieldKg      = parseFloat($('yieldKg').value);
+  const climateKey   = $('climate').value;
+  const irrigationKey= $('irrigation').value;
+  const soilKey      = $('soil').value;
+  const seasonKey    = $('season').value;
+
+  // Validation
+  const errorEl = $('formError');
+  if (!productKey || !yieldKg || !climateKey || !irrigationKey || !soilKey || !seasonKey) {
+    errorEl.textContent = 'Please fill in all fields before calculating.';
+    errorEl.hidden = false;
+    return;
+  }
+  errorEl.hidden = true;
+
+  const product   = WF_DATA.products[productKey];
+  const climate   = WF_DATA.climateMultipliers[climateKey];
+  const irrigation= WF_DATA.irrigationMultipliers[irrigationKey];
+  const soil      = WF_DATA.soilMultipliers[soilKey];
+  const season    = WF_DATA.seasonMultipliers[seasonKey];
+
+  // Combined multiplier from all conditions
+  const combinedMultiplier = climate.multiplier * irrigation.multiplier * soil.multiplier * season.multiplier;
+
+  // Adjusted footprint per kg
+  const adjustedPerKg = Math.round(product.baseFootprint * combinedMultiplier);
+
+  // Proportionally adjust green/blue/grey using the same multiplier
+  const totalBase = product.green + product.blue + product.grey;
+  const adjustedGreen = Math.round((product.green / totalBase) * adjustedPerKg);
+  const adjustedBlue  = Math.round((product.blue  / totalBase) * adjustedPerKg);
+  const adjustedGrey  = Math.round((product.grey  / totalBase) * adjustedPerKg);
+
+  // Total for the given yield
+  const totalLitres = Math.round(adjustedPerKg * yieldKg);
+
+  lastResult = {
+    productKey, product, yieldKg,
+    climateKey, climate,
+    irrigationKey, irrigation,
+    soilKey, soil,
+    seasonKey, season,
+    combinedMultiplier,
+    adjustedPerKg,
+    adjustedGreen, adjustedBlue, adjustedGrey,
+    totalLitres
+  };
+
+  renderResults(lastResult);
+}
+
+/* ============================================================
+   RENDER RESULTS
+   ============================================================ */
+function renderResults(r) {
+  $('resultsEmpty').hidden = true;
+  $('resultsContent').hidden = false;
+
+  // Hero
+  $('rCropIcon').textContent = r.product.icon;
+  $('rCropName').textContent = r.product.label;
+  $('rCropSub').textContent  = r.product.category;
+  $('rTotalLitres').textContent = formatNumber(r.totalLitres);
+  $('rYieldDisplay').textContent = formatYield(r.yieldKg);
+  $('rPerKg').textContent = formatNumber(r.adjustedPerKg);
+
+  // Water bars
+  const barsEl = $('waterBars');
+  barsEl.innerHTML = '';
+  const total = r.adjustedGreen + r.adjustedBlue + r.adjustedGrey;
+  const bars = [
+    { label:'Green Water (Rain)',     value:r.adjustedGreen, type:'green' },
+    { label:'Blue Water (Irrigation)',value:r.adjustedBlue,  type:'blue'  },
+    { label:'Grey Water (Pollution)', value:r.adjustedGrey,  type:'grey'  }
+  ];
+  bars.forEach(b => {
+    const pct = total > 0 ? Math.round((b.value / total) * 100) : 0;
+    const row = document.createElement('div');
+    row.className = 'water-bar-row';
+    row.innerHTML = `
+      <div class="water-bar-label">
+        <span>${b.label}</span>
+        <span>${formatNumber(b.value)} L/kg (${pct}%)</span>
+      </div>
+      <div class="water-bar-track">
+        <div class="water-bar-fill ${b.type}" style="width:0%" data-pct="${pct}"></div>
+      </div>
+    `;
+    barsEl.appendChild(row);
+  });
+  // Animate bars after paint
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.water-bar-fill').forEach(bar => {
+        bar.style.width = bar.dataset.pct + '%';
+      });
+    });
+  });
+
+  // Conditions
+  const cgEl = $('conditionsGrid');
+  cgEl.innerHTML = '';
+  const conditions = [
+    { label:'Climate',   value:r.climate.label,    mult:r.climate.multiplier },
+    { label:'Irrigation',value:r.irrigation.label, mult:r.irrigation.multiplier },
+    { label:'Soil',      value:r.soil.label,        mult:r.soil.multiplier },
+    { label:'Season',    value:r.season.label,      mult:r.season.multiplier }
+  ];
+  conditions.forEach(c => {
+    const chip = document.createElement('div');
+    chip.className = 'condition-chip';
+    const multDisplay = c.mult === 1
+      ? '✓ Baseline'
+      : (c.mult < 1 ? `↓ ×${c.mult} (saves water)` : `↑ ×${c.mult} (uses more)`);
+    chip.innerHTML = `
+      <span class="chip-label">${c.label}</span>
+      <span class="chip-value">${c.value}</span>
+      <span class="chip-mult">${multDisplay}</span>
+    `;
+    cgEl.appendChild(chip);
+  });
+
+  // Comparisons
+  renderComparisons(r.totalLitres);
+}
+
+/* ============================================================
+   REAL-WORLD COMPARISONS
+   ============================================================ */
+function renderComparisons(litres) {
+  const compGrid = $('comparisonsGrid');
+  compGrid.innerHTML = '';
+
+  const comparisons = [
+    {
+      icon: '🛁',
+      value: +(litres / 150).toFixed(1),
+      label: 'standard bathtubs (150 L each)'
+    },
+    {
+      icon: '🚿',
+      value: +(litres / 65).toFixed(1),
+      label: '8-min showers (65 L each)'
+    },
+    {
+      icon: '🍶',
+      value: +(litres / 1).toFixed(0),
+      label: 'one-litre water bottles'
+    },
+    {
+      icon: '🏊',
+      value: +(litres / 2500000).toFixed(4),
+      label: 'Olympic swimming pools (2.5 ML)'
+    },
+    {
+      icon: '🚰',
+      value: +(litres / 50).toFixed(1),
+      label: "person-days of drinking water (50 L/person/day)"
+    },
+    {
+      icon: '🌍',
+      value: +(litres / 3_785_000_000_000).toFixed(10),
+      label: 'of global daily freshwater use (≈3.8 trillion L)'
+    }
+  ];
+
+  comparisons.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'comparison-item';
+    item.innerHTML = `
+      <span class="comp-icon">${c.icon}</span>
+      <span class="comp-value">${formatNumber(c.value)}</span>
+      <span class="comp-label">${c.label}</span>
+    `;
+    compGrid.appendChild(item);
+  });
+}
+
+/* ============================================================
+   COMPARE
+   ============================================================ */
+function addToCompare() {
+  if (!lastResult) { showToast('Calculate a crop first!'); return; }
+  if (compareList.length >= 5) { showToast('Maximum 5 crops in comparison.'); return; }
+  const already = compareList.find(c => c.productKey === lastResult.productKey &&
+    c.climateKey === lastResult.climateKey &&
+    c.irrigationKey === lastResult.irrigationKey);
+  if (already) { showToast('This exact combination is already in the comparison.'); return; }
+  compareList.push({ ...lastResult });
+  renderCompare();
+  showToast(`${lastResult.product.icon} ${lastResult.product.label} added to Compare!`);
+}
+
+function renderCompare() {
+  const empty  = $('compareEmpty');
+  const table  = $('compareTable');
+  const actions= $('compareActions');
+
+  if (compareList.length === 0) {
+    empty.hidden  = false;
+    table.hidden  = true;
+    actions.hidden= true;
+    return;
+  }
+  empty.hidden   = false;  // keep the instructional text hidden once we have items
+  empty.hidden   = true;
+  table.hidden   = false;
+  actions.hidden = false;
+
+  const maxTotal = Math.max(...compareList.map(c => c.totalLitres));
+
+  let html = `
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Crop</th>
+          <th>Yield</th>
+          <th>Total Litres</th>
+          <th>L / kg</th>
+          <th>Climate</th>
+          <th>Irrigation</th>
+          <th>Visual</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  compareList.forEach((c, i) => {
+    const barPct = maxTotal > 0 ? Math.round((c.totalLitres / maxTotal) * 100) : 0;
+    html += `
+      <tr>
+        <td><strong>${c.product.icon} ${c.product.label}</strong></td>
+        <td>${formatYield(c.yieldKg)}</td>
+        <td><strong>${formatNumber(c.totalLitres)} L</strong></td>
+        <td>${formatNumber(c.adjustedPerKg)}</td>
+        <td>${c.climate.label}</td>
+        <td>${c.irrigation.label}</td>
+        <td class="compare-bar-cell">
+          <div class="compare-mini-bar" style="width:${barPct}%"></div>
+        </td>
+        <td>
+          <button class="quick-btn" style="color:var(--teal);border-color:var(--teal)" onclick="removeFromCompare(${i})">✕</button>
+        </td>
+      </tr>
+    `;
+  });
+  html += '</tbody></table>';
+  table.innerHTML = html;
+}
+
+function removeFromCompare(index) {
+  compareList.splice(index, 1);
+  renderCompare();
+}
+
+/* ============================================================
+   COPY RESULT
+   ============================================================ */
+function copyResult() {
+  if (!lastResult) return;
+  const r = lastResult;
+  const text = [
+    `AquaTrace — Water Footprint Result`,
+    `Crop: ${r.product.label}`,
+    `Yield: ${formatYield(r.yieldKg)}`,
+    `Total Water Footprint: ${formatNumber(r.totalLitres)} litres`,
+    `Per kg (adjusted): ${formatNumber(r.adjustedPerKg)} L/kg`,
+    `Green: ${formatNumber(r.adjustedGreen)} L/kg | Blue: ${formatNumber(r.adjustedBlue)} L/kg | Grey: ${formatNumber(r.adjustedGrey)} L/kg`,
+    ``,
+    `Conditions Applied:`,
+    `  Climate: ${r.climate.label} (×${r.climate.multiplier})`,
+    `  Irrigation: ${r.irrigation.label} (×${r.irrigation.multiplier})`,
+    `  Soil: ${r.soil.label} (×${r.soil.multiplier})`,
+    `  Season: ${r.season.label} (×${r.season.multiplier})`,
+    `  Combined multiplier: ×${r.combinedMultiplier.toFixed(3)}`,
+    ``,
+    `Data: Mekonnen & Hoekstra (2011), Water Footprint Network, FAO AQUASTAT`
+  ].join('\n');
+
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Result copied to clipboard!')).catch(() => {
+    showToast('Copy failed — please select and copy manually.');
+  });
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function formatNumber(n) {
+  if (n === undefined || n === null) return '—';
+  if (n >= 1_000_000) return (n / 1_000_000).toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'M';
+  if (n >= 1_000)     return n.toLocaleString();
+  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function formatYield(kg) {
+  if (kg >= 1000) return `${(kg/1000).toLocaleString(undefined,{maximumFractionDigits:2})} tonnes`;
+  return `${kg.toLocaleString()} kg`;
+}
+
+function showToast(msg) {
+  const toast = $('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
