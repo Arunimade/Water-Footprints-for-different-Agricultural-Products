@@ -11,7 +11,6 @@
 </head>
 <body>
 
-  <!-- Decorative background blobs -->
   <div class="bg-blob blob-1"></div>
   <div class="bg-blob blob-2"></div>
   <div class="bg-blob blob-3"></div>
@@ -28,7 +27,6 @@
       </div>
       <nav class="header-nav">
         <button class="nav-btn active" data-tab="calculator">Calculator</button>
-        <button class="nav-btn" data-tab="compare">Compare</button>
         <button class="nav-btn" data-tab="glossary">Glossary</button>
       </nav>
     </div>
@@ -55,7 +53,6 @@
 
           <form id="calculatorForm" novalidate>
 
-            <!-- Product -->
             <div class="field-group">
               <label class="field-label" for="product">Crop / Product</label>
               <div class="select-wrapper">
@@ -66,7 +63,6 @@
               <div class="product-meta" id="productMeta"></div>
             </div>
 
-            <!-- Yield -->
             <div class="field-group">
               <label class="field-label" for="yieldKg">
                 Quantity / Yield
@@ -85,9 +81,7 @@
               </div>
             </div>
 
-            <!-- 2-column grid for dropdowns -->
             <div class="field-grid">
-
               <div class="field-group">
                 <label class="field-label" for="climate">Climate Type</label>
                 <div class="select-wrapper">
@@ -96,7 +90,6 @@
                   </select>
                 </div>
               </div>
-
               <div class="field-group">
                 <label class="field-label" for="irrigation">Irrigation Method</label>
                 <div class="select-wrapper">
@@ -105,7 +98,6 @@
                   </select>
                 </div>
               </div>
-
               <div class="field-group">
                 <label class="field-label" for="soil">Soil Type</label>
                 <div class="select-wrapper">
@@ -114,7 +106,6 @@
                   </select>
                 </div>
               </div>
-
               <div class="field-group">
                 <label class="field-label" for="season">Growing Season</label>
                 <div class="select-wrapper">
@@ -123,14 +114,11 @@
                   </select>
                 </div>
               </div>
-
             </div>
 
-            <!-- Error -->
             <div class="form-error" id="formError" hidden></div>
 
-            <!-- Submit -->
-            <button type="submit" class="btn-calculate" id="calcBtn">
+            <button type="submit" class="btn-calculate">
               <span class="btn-icon">💧</span>
               Calculate Water Footprint
             </button>
@@ -153,7 +141,6 @@
 
           <div class="results-content" id="resultsContent" hidden>
 
-            <!-- Main Result -->
             <div class="card result-hero-card">
               <div class="result-crop-header">
                 <span class="result-crop-icon" id="rCropIcon"></span>
@@ -172,61 +159,38 @@
               </div>
             </div>
 
-            <!-- Water Type Breakdown -->
             <div class="card breakdown-card">
               <h3 class="card-section-title">Water Type Breakdown</h3>
               <div class="water-bars" id="waterBars"></div>
               <div class="water-legend">
-                <span class="legend-dot green"></span> Green — Rainwater
-                <span class="legend-dot blue"></span> Blue — Irrigation
+                <span class="legend-dot green"></span> Green — Rainwater &nbsp;
+                <span class="legend-dot blue"></span> Blue — Irrigation &nbsp;
                 <span class="legend-dot grey"></span> Grey — Pollution dilution
               </div>
             </div>
 
-            <!-- Conditions Summary -->
             <div class="card conditions-card">
               <h3 class="card-section-title">Applied Conditions</h3>
               <div class="conditions-grid" id="conditionsGrid"></div>
             </div>
 
-            <!-- Comparisons -->
             <div class="card comparisons-card">
               <h3 class="card-section-title">What does this equal?</h3>
               <div class="comparisons-grid" id="comparisonsGrid"></div>
             </div>
 
-            <!-- Source Note -->
             <div class="source-note">
-              <strong>Data Sources:</strong> Mekonnen &amp; Hoekstra (2011), Water Footprint Network, FAO AQUASTAT. Values represent global averages and are adjusted using peer-reviewed multipliers for local conditions.
+              <strong>Data Sources:</strong> Mekonnen &amp; Hoekstra (2011), Water Footprint Network, FAO AQUASTAT. Values represent global averages adjusted using peer-reviewed multipliers for local conditions.
             </div>
 
-            <!-- Actions -->
             <div class="result-actions">
               <button class="btn-secondary" id="btnReset">↺ Reset</button>
-              <button class="btn-secondary" id="btnAddCompare">+ Add to Compare</button>
               <button class="btn-primary" id="btnCopyResult">📋 Copy Result</button>
             </div>
 
           </div>
         </div>
 
-      </div>
-    </section>
-
-    <!-- ===== TAB: COMPARE ===== -->
-    <section class="tab-panel" id="tab-compare">
-      <div class="page-hero">
-        <h1 class="hero-title">Compare Water Footprints</h1>
-        <p class="hero-sub">Add up to 5 crops from the Calculator to compare side-by-side.</p>
-      </div>
-      <div class="card compare-card">
-        <div id="compareEmpty" class="compare-empty">
-          <p>No crops added yet. Calculate a crop's footprint and click <strong>+ Add to Compare</strong>.</p>
-        </div>
-        <div id="compareTable" hidden></div>
-        <div class="compare-actions" id="compareActions" hidden>
-          <button class="btn-secondary" id="btnClearCompare">✕ Clear All</button>
-        </div>
       </div>
     </section>
 
@@ -241,7 +205,6 @@
 
   </main>
 
-  <!-- FOOTER -->
   <footer class="site-footer">
     <div class="footer-inner">
       <span class="footer-brand">💧 AquaTrace</span>
