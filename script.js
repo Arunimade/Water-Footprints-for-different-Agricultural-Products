@@ -331,26 +331,6 @@ function renderResults(r) {
   renderComparisons(r.totalLitres);
 }
 
-function renderComparisons(litres) {
-  const grid = $('comparisonsGrid');
-  grid.innerHTML = '';
-  [
-    { icon:'🛁', value: +(litres / 150).toFixed(1),           label:'standard bathtubs (150 L)' },
-    { icon:'🚿', value: +(litres / 65).toFixed(1),            label:'8-min showers (65 L each)' },
-    { icon:'🍶', value: fmt(litres),                           label:'one-litre water bottles' },
-    { icon:'🏊', value: +(litres / 2500000).toFixed(4),       label:'Olympic swimming pools (2.5 ML)' },
-    { icon:'🚰', value: +(litres / 50).toFixed(1),            label:"person-days of drinking water" },
-    { icon:'🌍', value: (litres / 3.785e12).toExponential(2), label:'of global daily freshwater use' }
-  ].forEach(c => {
-    const item = document.createElement('div');
-    item.className = 'comparison-item';
-    item.innerHTML = `
-      <span class="comp-icon">${c.icon}</span>
-      <span class="comp-value">${c.value}</span>
-      <span class="comp-label">${c.label}</span>`;
-    grid.appendChild(item);
-  });
-}
 
 /* ============================================================
    COPY RESULT
